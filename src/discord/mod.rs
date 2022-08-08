@@ -7,6 +7,7 @@ use crate::discord::content::{DiscordMessage, Embed};
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct DiscordWebhookConfig {
+    /// The URL of the webhook.
     pub webhook_url: String,
     //TODO contain settings for setting default values for the webhook\
     pub username: Option<String>,
@@ -18,6 +19,7 @@ pub struct DiscordWebhook {
     pub config: DiscordWebhookConfig,
 }
 
+#[cfg(feature = "async-trait")]
 #[async_trait::async_trait]
 impl Webhook for DiscordWebhook {
     type Error = DiscordError;
@@ -28,6 +30,7 @@ impl Webhook for DiscordWebhook {
 }
 
 impl DiscordWebhook {
+    /// Send a generic message to a discord webhook.
     pub async fn send(&self, message: &WebhookMessage) -> Result<(), DiscordError> {
         let embed = Embed {
             title: Some(&message.title),
@@ -42,6 +45,7 @@ impl DiscordWebhook {
         };
         self.send_discord(message).await
     }
+    /// Send a Discord message to a discord webhook.
     pub async fn send_discord(&self, message: DiscordMessage<'_>) -> Result<(), DiscordError> {
         let body = serde_json::to_string(&message)?;
 

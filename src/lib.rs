@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
-use async_trait::async_trait;
 
 #[cfg(feature = "discord")]
 pub mod discord;
@@ -30,11 +29,19 @@ pub enum GenericWebhook {
     Discord(discord::DiscordWebhook),
 }
 
-#[async_trait]
+#[cfg(feature = "async-trait")]
+#[async_trait::async_trait]
 impl Webhook for GenericWebhook {
     type Error = WebhookError;
     #[allow(unused_variables)]
+    #[allow(unreachable_patterns)]
     async fn send_dyn(&self, message: &WebhookMessage) -> Result<(), Self::Error> {
+        self.send(message).await
+    }
+}
+
+impl GenericWebhook {
+    pub async fn send(&self, message: &WebhookMessage) -> Result<(), WebhookError> {
         match self {
             #[cfg(feature = "discord")]
             GenericWebhook::Discord(discord) => discord.send(message).await.map_err(WebhookError::from),
@@ -43,7 +50,8 @@ impl Webhook for GenericWebhook {
     }
 }
 
-#[async_trait]
+#[cfg(feature = "async-trait")]
+#[async_trait::async_trait]
 pub trait Webhook {
     type Error;
 
